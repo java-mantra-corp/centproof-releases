@@ -186,7 +186,14 @@ mkdir -p "$PUBLISH_DIR"
 cp "$LATEST_JSON_PATH" "$PUBLISH_DIR/latest.json"
 
 # ── Create the release ─────────────────────────────────────────────────
+# Explicit -R so this script works regardless of cwd.  Without it,
+# `gh` infers the target repo from whatever directory you happened to
+# be in when you invoked the script — which bit us on v0.1.1 when the
+# orchestrator (in pdfApplication/) called publish-release.sh and the
+# release landed on the PRIVATE app repo instead of the public
+# distribution repo.  Pin to the canonical target by name.
 gh release create "$VERSION" \
+  -R java-mantra-corp/centproof-releases \
   --title "$VERSION" \
   --notes "$NOTES" \
   --latest \
