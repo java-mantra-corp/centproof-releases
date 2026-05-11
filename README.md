@@ -54,9 +54,4 @@ the GitHub Releases API.
 
 ---
 
-## Maintainer docs
-
-Releasing a new version: see [`docs/RELEASE_PROCESS.md`][rp].
-
 [releases]: https://github.com/java-mantra-corp/centproof-releases/releases
-[rp]: ./docs/RELEASE_PROCESS.md
