@@ -1,0 +1,32 @@
+# Release binaries belong in GitHub Releases (CDN-served), NEVER in
+# git history.  A 145 MB .dmg committed once stays in the repo forever
+# and balloons every fresh clone.
+#
+# If you ever need to publish-then-commit metadata about a binary
+# (size, sha256, etc.), do it in CHANGELOG.md or docs/ — never the
+# binary itself.
+
+# macOS installer images
+*.dmg
+*.pkg
+
+# Tauri auto-updater payloads
+*.app.tar.gz
+*.app.tar.gz.sig
+
+# Tauri updater manifest (we mint one per release as an asset)
+latest.json
+
+# Generic build/archive bycatch
+*.zip
+*.tar
+*.tar.gz
+
+# macOS noise
+.DS_Store
+Thumbs.db
+
+# Editor configs that shouldn't escape this machine
+.idea/
+.vscode/
+*.swp
