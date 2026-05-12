@@ -113,17 +113,30 @@ SIGNATURE="$(cat "$SIG_PATH")"
 PUB_DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 LATEST_JSON_PATH="$(mktemp -t centproof-latest-XXXXXX.json)"
-# Note: notes is a plain string — we use a placeholder here.  The GitHub
-# Release page itself shows the CHANGELOG body; the in-app updater UI
-# (Preferences > About > Update available) reads `notes` for a short
-# blurb under the version number.
+# Tauri 2's updater plugin reliably parses the platforms-keyed format
+# below; the flat format with top-level `url`/`signature` is the Tauri 1
+# legacy shape and isn't accepted by all 2.x releases (silently returns
+# "no update available" when the parser can't find platforms[target]).
+# v0.1.1 launch surfaced this — emit platforms-keyed from now on.
+#
+# Single platform today (darwin-aarch64).  When we add Intel / Windows
+# builds later, add more keys under "platforms" with each platform's
+# own url + signature (the .sig files differ per-platform).
+#
+# `notes` is a short blurb — the GitHub Release page itself shows the
+# CHANGELOG body, but the in-app updater UI surfaces `notes` under the
+# version number, so keep it brief and informative.
 cat >"$LATEST_JSON_PATH" <<EOF
 {
   "version": "${VERSION_BARE}",
   "pub_date": "${PUB_DATE}",
-  "url": "${TARBALL_URL}",
-  "signature": $(printf '%s' "$SIGNATURE" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))'),
-  "notes": "CentProof ${VERSION_BARE}. See centproof.com/releases for full notes."
+  "notes": "CentProof ${VERSION_BARE}. See centproof.com/releases for full notes.",
+  "platforms": {
+    "darwin-aarch64": {
+      "url": "${TARBALL_URL}",
+      "signature": $(printf '%s' "$SIGNATURE" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))')
+    }
+  }
 }
 EOF
 
