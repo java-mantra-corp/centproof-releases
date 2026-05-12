@@ -22,6 +22,65 @@ version must start with `## <version>` on its own line.
 
 ---
 
+## v0.1.2 — _unreleased_
+
+### Added
+
+- Post-import Suggestion Review. After importing a statement, a
+  guided screen walks you through the AI's suggested entities and
+  categories, grouped by suggestion so you can accept many similar
+  rows in one click. New merchants and new categories get their own
+  section requiring deliberate approval.
+- Copy from Transactions. Click + drag across descriptions, merchant
+  names, categories, dates, amounts, and the description shown in
+  the Set Entity / Set Category dialogs to select and copy.
+- Undo on Hide. Hiding a transaction now shows a toast with an Undo
+  button so a misclick is one click to recover. The "Show hidden"
+  toggle shows a count when hidden rows exist and reveals them
+  immediately on toggle (no separate Search click).
+
+### Changed
+
+- AI suggestions ignore the account holder. Bank statement
+  descriptions often echo your name; the AI now picks the actual
+  merchant or payer instead of tagging the transaction back to you.
+- Ask CentProof's "show all transactions" returns both debits AND
+  credits. Spending-specific phrasing ("show purchases", "what did
+  I spend on") still scopes to debits.
+- AI mode defaults to Bundled (offline) for fresh installs and
+  settings resets. External-mode URL must be filled in manually.
+- Set Category / Set Entity dialogs: clearer button labels showing
+  what will actually happen ("Save rule & tag N rows" vs "Apply to
+  this row only"). Click an already-selected item in the picker to
+  deselect it. The bottom-left destructive button is now labeled
+  "× Clear & delete rule" so its scope is clear.
+
+### Fixed
+
+- AI no longer mistakenly suggests your own name as the entity for
+  transactions where your name appears in the bank's raw description
+  (the most common false-positive in v0.1.1 imports).
+- Encrypted PDFs are now protected from silent corruption. If the
+  macOS Keychain entry holding your PDF encryption key becomes
+  missing or unreadable (e.g. after Time Machine restore or a
+  manual deletion), CentProof refuses to overwrite the original key
+  and surfaces clear recovery instructions instead of orphaning
+  every previously-imported PDF.
+- Set Category dialog: when an auto-generated match pattern doesn't
+  match the very row you opened the dialog from, your "tag this
+  row" intent now still applies (was previously failing silently).
+- Stale-cache footprint in the Search/Transactions view's hidden-row
+  flow eliminated — toggle responds immediately and the count is
+  always accurate.
+
+### Removed
+
+- Hardcoded LAN IP that previously shipped as the default External-
+  mode AI server URL. Fresh installs and settings wipes no longer
+  surface a stranger's network address.
+
+---
+
 ## v0.1.1 — 2026-05-11
 
 ### Changed
