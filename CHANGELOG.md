@@ -22,6 +22,19 @@ version must start with `## <version>` on its own line.
 
 ---
 
+## v0.1.4 — _unreleased_
+
+### Fixed
+
+- License section correctly displays "Pro Monthly" vs "Pro Lifetime"
+  for buyers on the live LemonSqueezy storefront. The v0.1.3 fix
+  only recognised the test-store product IDs because LS keeps test
+  and live catalogues as completely separate environments; v0.1.4
+  adds the live-store IDs so paying customers see the right tier
+  label from day one. No action required from existing customers.
+
+---
+
 ## v0.1.3 — 2026-05-13
 
 ### Added
