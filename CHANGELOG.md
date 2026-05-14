@@ -22,6 +22,47 @@ version must start with `## <version>` on its own line.
 
 ---
 
+## v0.1.3 — _unreleased_
+
+### Added
+
+- Suggestion Review: full keyboard navigation (arrow keys + Enter to
+  accept) plus an "Accept all routine" button that one-clicks every
+  high-confidence existing-merchant suggestion so post-import triage
+  takes seconds instead of minutes.
+- PDF storage key recovery dialog. If your keychain entry for the
+  storage encryption key ever goes missing (rare — usually a corrupted
+  Keychain or a restored-from-backup state mismatch), CentProof now
+  shows a friendly recovery dialog explaining exactly what happened
+  and your options, instead of failing imports with a cryptic error.
+
+### Changed
+
+- License section now correctly displays "Pro Monthly" vs "Pro
+  Lifetime" based on the actual LemonSqueezy product, not an
+  unreliable heuristic. Existing Pro Monthly buyers no longer see
+  "Pay once, use forever" in Preferences > License.
+- Pricing copy in the License preferences matches the website:
+  $49 lifetime, $5/mo subscription, $29 launch promo (was showing
+  the old $59/$5/$39 numbers).
+- Pro Lifetime device count documented as 2 Macs (matches what the
+  license keys are actually issued for; the previous "3 Macs" copy
+  was aspirational).
+
+### Fixed
+
+- Smarter rule pattern suggestions. When you save a category /
+  entity rule from a transaction, the suggested match pattern now
+  correctly handles descriptions with numbers mixed into the
+  merchant name (e.g. "Goodleap 14 Agnt Pymnt") — previously the
+  generated regex didn't match the original row.
+- More defensive encryption-key bootstrap. The orphan-storage check
+  now reads the caller's data directory rather than guessing,
+  preventing a false-positive "missing key" trigger when CentProof
+  is launched from a non-standard installation path.
+
+---
+
 ## v0.1.2 — 2026-05-12
 
 ### Added
