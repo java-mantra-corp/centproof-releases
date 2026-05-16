@@ -22,6 +22,49 @@ version must start with `## <version>` on its own line.
 
 ---
 
+## v0.1.5 — _unreleased_
+
+### Added
+
+- **Account Summary panel now mirrors your bank statement line-for-line.**
+  Chase Total Checking shows separate "Deposits and Additions",
+  "Checks Paid", "Electronic Withdrawals", and "Fees" rows (matching
+  the PDF's Checking Summary block) instead of a single collapsed
+  "Debits (sum)" total. Citi Costco Anywhere Visa shows "Payments"
+  and "Credits" on separate rows (matching the PDF's Account Summary).
+  Easier to audit side-by-side against your statement.
+
+### Fixed
+
+- **Citi Costco Anywhere Visa statements now reconcile cleanly.** Five
+  bugs caused by the right-side rewards-summary column bleeding into
+  transaction rows:
+  - `Payments` summary line was missed when pdf.js merged it with the
+    "Late Payment Warning" paragraph (was undercounting by thousands).
+  - APPLE.COM/BILL captured the rewards-balance number ($58.86) instead
+    of the actual purchase ($2.99).
+  - Rows ending in a rewards trailer like "5% on gas ... +$0.00" or
+    "+$0.96" were silently dropped (12/15 AMAZON, 12/16 LAZ PARKING,
+    12/19 VEG N CHAAT on the affected fixture).
+  - Multi-line merchant names (AMAZON RETA*, COLDSTONE CREAMERY,
+    DOORDASH wrap) lost the merchant text and showed only the date.
+  - PDF-preview highlight box stopped extending into the rewards column.
+- **"Override & Commit" button now works.** Previously a no-op on macOS
+  because Tauri's WKWebView doesn't implement `window.prompt()` for
+  reason input — clicking the button appeared to do nothing. Replaced
+  with a proper React modal that captures the reason in a textarea.
+
+### Internal
+
+- Added 95-row Citi Costco Anywhere Visa regression smoke
+  (`npm run smoke:citi-costco`) — 10 sentinel rows lock in the
+  v0.1.5 parser fixes so they can't silently regress.
+- Added Chase Total Checking Summary-breakdown smoke
+  (`npm run smoke:chase`) — asserts the bank-printed labels appear
+  in PDF order and that row sums equal the breakdown totals.
+
+---
+
 ## v0.1.4 — 2026-05-13
 
 ### Fixed
