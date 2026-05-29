@@ -22,6 +22,91 @@ version must start with `## <version>` on its own line.
 
 ---
 
+## v0.1.7 — 2026-05-29
+
+### Added
+
+- **Smart merchant recognition for 280+ common US merchants.**
+  CentProof now recognizes Amazon, all major gas stations
+  (76, ARCO, Chevron, Shell, Costco Gas, BP, and more), top SaaS
+  subscriptions (Claude.ai, OpenAI, GitHub, AWS, Netflix, Spotify,
+  Adobe, Microsoft, etc.), every major retailer, restaurant chain,
+  travel provider, and telecom — instantly and locally, no AI
+  inference needed. Combined with the existing AI suggestion
+  pipeline, common merchants now tag themselves on import with
+  no waiting and 100% deterministic results.
+
+- **One-click entity + category tagging.** The Set Entity dialog
+  now has an optional "Also set a category for this pattern"
+  section. Check the box, pick a category, save once — both a
+  tag rule for entity AND a tag rule for category are created
+  together using the same match pattern. No more forgetting to
+  set the category half of the rule and discovering on the next
+  month's import that entity auto-tagged but category stayed
+  empty.
+
+- **Edit / rename entities and categories.** The Entities and
+  Categories tabs both have an Edit button on each row. Type a
+  new name and every tagged transaction immediately shows the
+  updated display name — correction rules, historical tags, and
+  source-row references are all preserved. Useful for cleaning
+  up names like "amazon" → "Amazon" or "AT&T Wireless" → "AT&T"
+  without having to delete + re-tag.
+
+- **Chase Business Complete Checking support.** Chase business
+  checking statements (Business Complete, Performance Business,
+  Performance Business with Interest, Platinum Business, Analysis
+  Business — any "Chase ... Checking" product name) now
+  fingerprint and parse correctly, with full reconciliation to
+  the cent. Previously these produced the "unsupported PDF"
+  dialog despite Chase being a supported bank.
+
+- **Documentation site at centproof.com/docs.** A new
+  how-to-use-the-app reference with seven guides covering quick
+  start, importing statements, reviewing and reconciling, tagging
+  entities and categories, asking the local AI, reports and
+  exports, and backup and recovery. The in-app Help → Docs menu
+  now opens this section instead of the homepage.
+
+### Fixed
+
+- **Auto-update restart race.** Some users reported that clicking
+  "Restart now" the instant it appeared during an update did
+  nothing — the app restarted on the OLD version instead of the
+  new one. The Restart button now appears only after the install
+  actually completes (not just after the download completes), so
+  fast-clickers can't accidentally restart mid-install and boot
+  the old binary.
+
+- **Auto-tag suggestions running on already-tagged transactions.**
+  The local AI was generating suggestions for every transaction
+  on every import — even rows that already had both their entity
+  AND category set by correction rules. AI now runs only on rows
+  that actually need it. Imports complete noticeably faster on
+  statements where most rows match existing rules.
+
+### Notes for existing users
+
+- **No database changes.** v0.1.6 → v0.1.7 upgrades cleanly with
+  no migration. All your tagged transactions, correction rules,
+  entities, categories, and saved reports carry forward
+  identically.
+- **No change to existing supported-bank behavior.** PDFs from
+  any of the nine supported banks still take the same verified-
+  parser path. The Chase business-statement fix only affects
+  Chase business checking products that previously failed
+  fingerprinting.
+- **First-update tip.** When the v0.1.7 update prompt appears,
+  click "Restart now" as usual. Because the race-condition fix
+  lives IN v0.1.7, the v0.1.6 → v0.1.7 upgrade itself uses
+  v0.1.6's old updater code — so a very fast click could
+  occasionally bite the same race (uncommon). If it does, just
+  open Preferences → About and click "Check for updates" again;
+  it'll complete normally. From v0.1.7 onward, future updates
+  use the fixed flow forever.
+
+---
+
 ## v0.1.6 — 2026-05-27
 
 ### Added
