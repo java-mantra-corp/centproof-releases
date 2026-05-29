@@ -22,6 +22,59 @@ version must start with `## <version>` on its own line.
 
 ---
 
+## v0.1.6 — 2026-05-27
+
+### Added
+
+- **Best-effort extraction for unsupported bank PDFs.** When you drop in
+  a statement from a bank or card issuer CentProof doesn't yet have a
+  verified parser for, you now get an opt-in dialog with three choices
+  instead of a dead-end error:
+  - **Try best-effort extraction** — run a generic heuristic parser
+    that looks for date / description / amount patterns anywhere in the
+    PDF and shows you what it could pull out. The result is read-only —
+    nothing is saved to your imports — so it's safe to try even when
+    the rows might be imprecise. Side-by-side amount/balance columns,
+    multi-line descriptions, and non-standard layouts may produce
+    partial or incorrect rows; the result screen tells you whether the
+    extracted rows reconcile against the statement's opening and
+    closing balance under either checking-account or credit-card sign
+    conventions.
+  - **Send us a sample** — opens
+    [centproof.com/banks/share-sample](https://centproof.com/banks/share-sample)
+    in your browser with the bank name and app version pre-filled. The
+    page walks you through redacting personal fields, then you email
+    the redacted PDF directly to support — nothing is uploaded from
+    the app itself. New parsers typically ship in the next maintenance
+    release (1–2 weeks).
+  - **Cancel** — closes the dialog with no side effects. Identical to
+    the pre-v0.1.6 behavior after dismissing the alert.
+- **Best-effort preview screen** with extracted-row table, balance
+  detection, reconciliation status (tried under both sign conventions),
+  parser diagnostics (lines scanned, headers rejected, ambiguous
+  dates), and an inline "Send sample" CTA that pre-fills the bank
+  name you confirm.
+
+### Changed
+
+- The previous "Unsupported PDF" browser alert is replaced with the
+  new three-option dialog. Users who just want to dismiss can still
+  do so with one click (Cancel) — the new flow strictly adds choices
+  rather than replacing the dismissal path.
+
+### Notes for existing users
+
+- **No database changes.** Best-effort imports are preview-only in
+  v0.1.6 and never write to your local database. Existing imported
+  statements, accounts, transactions, tags, and reports are untouched.
+- **No change to supported-bank behavior.** PDFs from any of the nine
+  supported banks (Chase, Wells Fargo, BoA, Capital One, Apple Card,
+  American Express, Discover, Citi, US Bank) take the same verified-
+  parser path they did in v0.1.5. The new dialog only appears when the
+  PDF can't be fingerprinted to a known bank.
+
+---
+
 ## v0.1.5 — 2026-05-16
 
 ### Added
