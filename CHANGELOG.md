@@ -24,6 +24,29 @@ version must start with `## <version>` on its own line.
 
 ## v0.1.10 — _unreleased_
 
+### Fixed
+
+- **"Generating AI suggestions" screen could still hang after the
+  v0.1.9 fix in two more error paths.** v0.1.9 unblocked rows
+  whose LLM call threw an exception, but two other paths to
+  errors were missed:
+    1. When the local model returned a response that LOOKED valid
+       structurally but had `confidence: null` (or any
+       non-numeric confidence) — small local models sometimes
+       hallucinate this — the validation correctly rejected the
+       response, but the rejection path forgot to mark the row
+       as attempted.
+    2. If any code path inside the suggestion function threw
+       synchronously OUTSIDE the LLM call (a SQL error, a regex
+       edge case, etc.), the whole batch aborted, leaving
+       every subsequent row in the statement pending forever.
+  v0.1.10 fixes the first case directly and adds a defense-in-
+  depth wrapper at the batch loop so the second case also can't
+  trap rows in pending — even for future code paths we haven't
+  thought of.  The result: the "AI suggestions seem stuck"
+  90-second escape from v0.1.9 should be a rarity now, not a
+  frequent occurrence.
+
 ### Changed
 
 - **Toast notifications now replace native alert() dialogs
