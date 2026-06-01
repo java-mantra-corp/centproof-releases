@@ -127,6 +127,21 @@ version must start with `## <version>` on its own line.
   Switched to the same jsPDF + native save-dialog path Settlement
   Report already uses. Click now actually produces a file.
 
+- **"Generating AI suggestions" screen could hang indefinitely.**
+  If a single LLM call timed out or errored during the
+  on-import suggestion pass, the sidecar correctly logged the
+  failure but never marked the row as attempted — so the in-app
+  progress counter never decremented past it, and the screen
+  was stuck at "N of M analyzed" forever even though the
+  backend was idle.  The error path now marks errored rows as
+  attempted (matching what the low-confidence-skip path already
+  did), so progress unblocks immediately.  The screen also gains
+  a safety net: if progress hasn't moved for 90 seconds it
+  switches to a clear "Suggestions seem stuck — open
+  Transactions" panel with a button, so users can never get
+  trapped on this screen again regardless of the underlying
+  cause.
+
 - **Chase Business Complete Checking statements with no deposits
   that period.** v0.1.7's business-statement support relied on a
   "deposits and additions" section marker to recognize a Chase
