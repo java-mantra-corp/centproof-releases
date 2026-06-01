@@ -22,6 +22,34 @@ version must start with `## <version>` on its own line.
 
 ---
 
+## v0.1.10 — _unreleased_
+
+### Changed
+
+- **Toast notifications now replace native alert() dialogs
+  across the entire app.** v0.1.8 fixed the most-trafficked
+  surfaces (Categories, Entities, Trash, Settlement, Tax
+  Summary); v0.1.10 finishes the sweep — Statement upload,
+  Save report, Manual entries (both Settlement and Tax Summary
+  variants), AI suggestion accept/dismiss, Bulk-action bar,
+  Notes cell, the Best-effort import screen, Review screen,
+  and the Preferences panels.  Every success and every error
+  message now uses the same green-check / amber-warning /
+  red-error toast pattern the newer screens use, so feedback
+  stays consistent across the app regardless of which surface
+  triggered it.  Many of these alerts had been silently dropped
+  by Tauri's macOS webview (same root cause as the
+  confirm-dialog fix in v0.1.8) — so this isn't just polish,
+  it's also unblocking error messages users were never seeing.
+
+### Notes for existing users
+
+- **Upgrade in place.** No database changes, no settings to
+  migrate.  Open Preferences → About → Check for updates, or
+  download the new .dmg from centproof.com/download.
+
+---
+
 ## v0.1.9 — 2026-05-31
 
 ### Fixed
@@ -42,24 +70,6 @@ version must start with `## <version>` on its own line.
   seem stuck — open Transactions" panel with a button.  Users
   can never get trapped on this screen again regardless of the
   underlying cause.
-
-### Changed
-
-- **Toast notifications now replace native alert() dialogs across
-  the entire app.** v0.1.8 fixed the most-trafficked surfaces
-  (Categories, Entities, Trash, Settlement, Tax Summary); v0.1.9
-  finishes the sweep — Statement upload, Save report, Manual
-  entries (both Settlement and Tax Summary variants), AI
-  suggestion accept/dismiss, Bulk-action bar, Notes cell, the
-  Best-effort import screen, Review screen, and the Preferences
-  panels.  Every success and every error message now uses the
-  same green-check / amber-warning / red-error toast pattern the
-  newer screens use, so feedback stays consistent across the app
-  regardless of which surface triggered it.  Many of these
-  alerts had been silently dropped by Tauri's macOS webview
-  (same root cause as the confirm-dialog fix in v0.1.8) — so
-  this isn't just polish, it's also unblocking error messages
-  users were never seeing.
 
 ### Notes for existing users
 
