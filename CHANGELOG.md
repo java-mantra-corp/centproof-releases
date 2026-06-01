@@ -22,6 +22,35 @@ version must start with `## <version>` on its own line.
 
 ---
 
+## v0.1.9 — _unreleased_
+
+### Fixed
+
+- **"Generating AI suggestions" screen could hang indefinitely on
+  import.** If a single LLM call timed out or errored during the
+  on-import suggestion pass, the sidecar correctly logged the
+  failure but never marked that row as attempted — so the in-app
+  progress counter never decremented past it, and the screen
+  stayed at "N of M analyzed" forever even though the backend
+  was idle.  Reported by a v0.1.8 user who saw a 30-minute hang
+  on a 2-transaction statement (the same bug also affected v0.1.7
+  and earlier).  The error path now marks errored rows as
+  attempted, matching what the low-confidence-skip path already
+  did, so progress unblocks immediately.  As a defense-in-depth
+  measure, the screen also gains a safety net: if progress
+  hasn't moved for 90 seconds it switches to a clear "Suggestions
+  seem stuck — open Transactions" panel with a button.  Users
+  can never get trapped on this screen again regardless of the
+  underlying cause.
+
+### Notes for existing users
+
+- **Upgrade in place.** No database changes, no settings to migrate.
+  Open Preferences → About → Check for updates, or download the
+  new .dmg from centproof.com/download.
+
+---
+
 ## v0.1.8 — 2026-05-31
 
 ### Added
@@ -126,21 +155,6 @@ version must start with `## <version>` on its own line.
   window.print() API, which Tauri's macOS webview silently drops.
   Switched to the same jsPDF + native save-dialog path Settlement
   Report already uses. Click now actually produces a file.
-
-- **"Generating AI suggestions" screen could hang indefinitely.**
-  If a single LLM call timed out or errored during the
-  on-import suggestion pass, the sidecar correctly logged the
-  failure but never marked the row as attempted — so the in-app
-  progress counter never decremented past it, and the screen
-  was stuck at "N of M analyzed" forever even though the
-  backend was idle.  The error path now marks errored rows as
-  attempted (matching what the low-confidence-skip path already
-  did), so progress unblocks immediately.  The screen also gains
-  a safety net: if progress hasn't moved for 90 seconds it
-  switches to a clear "Suggestions seem stuck — open
-  Transactions" panel with a button, so users can never get
-  trapped on this screen again regardless of the underlying
-  cause.
 
 - **Chase Business Complete Checking statements with no deposits
   that period.** v0.1.7's business-statement support relied on a
