@@ -22,6 +22,169 @@ version must start with `## <version>` on its own line.
 
 ---
 
+## v0.1.8 — 2026-05-31
+
+### Added
+
+- **Tax Summary view — built for the hand-it-to-my-CPA moment.**
+  A new Reports tab that sums every credit and debit in a date
+  range across one account or all of them, then breaks the
+  outgoing total down by kind so you can see at a glance what
+  was a credit-card payment, what was a transfer, and what was
+  a real expense. Date-range presets cover the common windows
+  (Tax year, Year-to-date, Last 3 months, Last 90, Last 30) plus
+  a custom range. The numbers tie directly to the bank statements'
+  printed summary blocks, so your CPA can verify against source
+  PDFs.
+
+- **Save as PDF + Detailed PDF (with source snapshots) for Tax
+  Summary.** Two export buttons. "Save as PDF" produces a clean
+  one-page CPA handoff with the headline totals, outgoing
+  breakdown, and a "For your CPA" note explaining that credit-card
+  payments and account transfers are inter-account movements
+  rather than deductible expenses. "Detailed PDF (with snapshots)"
+  adds two more pages — a complete transactions list and an
+  appendix with a cropped snapshot of every transaction's row
+  from its source PDF — so the CPA can spot-check every number
+  down to the actual bank statement without ever opening the
+  source files.
+
+- **Manual entries on Tax Summary for off-statement cash flows.**
+  Click "Add manual entry" to record cash payments, owner draws,
+  in-kind income, or year-end tax adjustments that never hit a
+  bank statement. Entries merge into the headline Income /
+  Outgoing / Net totals and surface in a dedicated amber "Manual
+  entries" table on screen and on a separate page in the PDF —
+  always with a MANUAL badge so the CPA can tell at a glance
+  what's bank-verified vs user-claimed. Edit and delete inline.
+
+- **Schedule C preset on Categories.** One click adds the 16
+  standard IRS Schedule C expense categories (Advertising, Bank &
+  Card Fees, Contractor Labor, Insurance, Office Expenses, Rent &
+  Lease, Software & Subscriptions, Travel, Vehicle / Mileage, and
+  so on). Idempotent — same-named categories you already have are
+  reused, not duplicated. Useful for fresh-install 1099 freelancers
+  who want the standard taxonomy set up without thinking about it.
+
+- **Set Entity dialog now has an "Also set category" companion —
+  and Set Category dialog now has the matching "Also set entity"
+  companion.** Symmetric to v0.1.7's Set Entity addition. Whichever
+  dialog you open first, you can create both correction rules in
+  one save with the same match pattern. No more "I tagged the
+  entity but forgot the category" or vice versa.
+
+- **User-resizable column widths on Search and Trip Report.**
+  Drag any column header's right edge to widen or narrow it.
+  Widths persist in localStorage per table, so they survive
+  reloads and updates. Double-click the resize handle to reset
+  a column to its default.
+
+- **App version shown in the sidebar.** Next to the CentProof
+  name in the header. Useful when filing bug reports or verifying
+  an auto-update actually applied.
+
+### Fixed
+
+- **Every destructive action's confirm dialog was silently doing
+  nothing on macOS.** Click "Move to Trash" on a statement, click
+  Delete on a category or entity, click "Add Schedule C preset" —
+  all of these expected to show a yes/no confirmation but the
+  dialog never appeared, and (because the underlying gate
+  defaulted to "cancel") the action silently did nothing. The
+  root cause was a Tauri webview behavior on macOS that drops
+  browser confirm() calls without a dialog. CentProof now uses
+  Tauri's native confirmation plugin, which produces a real macOS
+  sheet with title, message, and labeled action buttons. **If you
+  hit this in v0.1.7 and concluded a feature was broken — try
+  again after updating.** The Schedule C preset, in particular,
+  was completely blocked.
+
+- **Backend error messages were not reaching the user.** When the
+  sidecar rejected an action (e.g., "can't delete a category that
+  still has transactions"), the catch handler tried to display
+  the message via the same dropped-dialog mechanism above, so the
+  user saw no feedback at all. CentProof now uses the same toast
+  notification system as Tax Summary and Settlement for delete /
+  restore / empty-trash feedback in Categories, Entities, and
+  Trash — success and error messages alike.
+
+- **Category and Entity delete sometimes refused on rows the UI
+  said were UNUSED.** If you tagged a transaction with a category
+  or entity and later trashed the statement that transaction
+  belonged to, the Categories / Entities lists correctly showed
+  the tag as UNUSED — but clicking Delete still failed with "1
+  transactions still reference it." The list count and the delete
+  check were using different filters: the list excluded
+  trashed-statement rows, the delete didn't. CentProof now uses
+  the same filter for both, and silently clears the dangling
+  pointer on the trashed-statement row inside the delete (audit
+  log records the count). The UI's UNUSED badge now reliably
+  means "safe to delete."
+
+- **Tax Summary "Save as PDF" producing no file in the desktop
+  app.** A first-pass implementation relied on the browser's
+  window.print() API, which Tauri's macOS webview silently drops.
+  Switched to the same jsPDF + native save-dialog path Settlement
+  Report already uses. Click now actually produces a file.
+
+- **Chase Business Complete Checking statements with no deposits
+  that period.** v0.1.7's business-statement support relied on a
+  "deposits and additions" section marker to recognize a Chase
+  business statement. Quiet months with only one Electronic
+  Withdrawal (and no deposits) lacked that marker, so the parser
+  fell back to the personal-Chase path and extracted zero
+  transactions — reconciliation came up off by the withdrawal
+  total. The detection now matches any of the five Chase business
+  section markers, so quiet-month statements parse correctly and
+  reconcile to the cent.
+
+- **Settlement Report date inputs visually showed today's date
+  but the report listed historical transactions.** The empty-input
+  placeholder in macOS rendered as today's date, indistinguishable
+  from a real value. After clicking Run, the From / To inputs now
+  auto-fill to the actual data range of the returned rows so
+  what's on screen matches what the inputs say.
+
+### Changed
+
+- **Settlement Report now uses toast notifications instead of
+  native dialogs for save and export feedback.** Brings the
+  Settlement screen in line with the rest of the app (Tax Summary,
+  Cleanup Inbox, Categories, Search). Non-blocking, auto-dismiss,
+  and clearly visually distinct between success and error.
+
+- **"Move to Trash" confirm dialog now matches the actual
+  behavior.** Previous text read "Delete this statement and all
+  its transactions?" — which was scary and inaccurate, since
+  trashing is recoverable for 30 days. The new prompt names the
+  specific statement (filename and period) and explains that
+  it'll stay recoverable for 30 days via the Trash tab before
+  being purged permanently. Action buttons are now labeled
+  "Move to Trash" and "Keep" instead of generic OK / Cancel.
+
+### Notes for existing users
+
+- **One safe database migration.** Manual entries gained an
+  optional account_id column to power the Tax Summary use case;
+  the migration runs automatically on first launch and is
+  additive, so all your existing Settlement manual entries carry
+  forward unchanged.
+- **No change to existing supported-bank behavior.** PDFs from
+  the nine supported banks still take the same verified-parser
+  path. The Chase fix only affects Chase business checking
+  statements that previously produced zero transactions on quiet
+  months.
+- **Tax Summary works on existing data.** No re-import needed.
+  Open the new Reports → Tax Summary tab, pick a period, and
+  compute — every reconciled statement you've already ingested
+  contributes immediately.
+- **If destructive actions seemed broken on v0.1.7 — they were.**
+  See the confirm-dialog fix in Fixed above. Re-try anything you
+  had given up on (deleting a category, trashing a statement,
+  adding the Schedule C preset).
+
+---
+
 ## v0.1.7 — 2026-05-29
 
 ### Added
