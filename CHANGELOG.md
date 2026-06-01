@@ -22,6 +22,64 @@ version must start with `## <version>` on its own line.
 
 ---
 
+## v0.1.11 — _unreleased_
+
+### Fixed
+
+- **Chase business-statement transactions were being tagged
+  `kind = deposit` even when they were outgoing payments.** Surfaced
+  by a v0.1.10 user looking at Tax Summary — the "Outgoing
+  breakdown" showed 14 transactions labeled "deposit" totaling
+  $7,061.54, when in fact those rows were all real debits (Chase
+  Credit Card autopay, 7-Eleven purchases, ATM withdrawals,
+  Zelle payments) that just didn't match the parser's specific
+  description regexes.  Root cause: the classifier used the
+  SIGN of the amount as its fallback ("amountCents > 0 →
+  deposit"), but the business-statement parser passes an unsigned
+  amount because Chase Business PDFs don't print a sign —
+  direction is implied by which section the row sits in.  The
+  fallback then returned "deposit" for every business-row debit
+  whose description didn't match a specific regex.  The fix passes
+  direction explicitly, so the fallback is now `direction ===
+  'credit' ? 'deposit' : 'purchase'` — bug eliminated for new
+  imports.
+- **One-shot backfill migration corrects existing wrong kinds.**
+  When you launch v0.1.11, the sidecar runs a one-time pass that
+  re-classifies every transaction whose `(direction, kind)` pair
+  is the impossible state the bug produced (e.g., `debit +
+  deposit`, `debit + direct_dep`).  Re-classification uses the
+  corrected classifier on the original description, so backfilled
+  rows are indistinguishable from freshly-ingested ones.  Tax
+  Summary's Outgoing breakdown now reads what it should — credit
+  card payments, ATM withdrawals, purchases, transfers, fees —
+  not a single sweeping "deposit" bucket.  The audit log records
+  how many rows were corrected and the before-after kind
+  transitions so the operation is traceable.  Idempotent — re-
+  runs find zero candidates.
+- **Tax Summary's breakdown now shows "Deposits" and "Direct
+  deposits" instead of the raw lowercase `deposit` /
+  `direct_dep` strings.** Polish — the friendly-label map in
+  the on-screen view was missing those entries (the PDF builder
+  already had them).
+
+### Notes for existing users
+
+- **One safe backfill migration.** Runs once on first launch
+  after upgrade.  Audit log captures the count of corrections;
+  no data loss possible — the migration only writes
+  `transaction_kind`, never touches amounts / dates /
+  descriptions / FKs.  Backups (Time Machine etc.) of your
+  pre-v0.1.11 database remain readable by older releases.
+- **Tax Summary will look different on existing imports.**
+  Specifically, the Outgoing breakdown will redistribute what
+  was previously a giant "deposit" bucket into the real
+  categories.  If you handed a v0.1.10 Tax Summary PDF to your
+  CPA already, regenerate it on v0.1.11 — the totals (Income,
+  Outgoing, Net) are unchanged, but the kind breakdown
+  shifts.
+
+---
+
 ## v0.1.10 — 2026-06-01
 
 ### Fixed
