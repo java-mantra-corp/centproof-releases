@@ -22,6 +22,52 @@ version must start with `## <version>` on its own line.
 
 ---
 
+## v0.1.12 — _unreleased_
+
+### Added
+
+- **Merchant city + state are now extracted from checking-account
+  transactions.** The LOC column in the Transactions view used to
+  be empty for every checking row because the checking parsers
+  (Chase, Wells Fargo, Bank of America, US Bank) didn't extract
+  the trailing `CITY ST` pattern that credit-card parsers had
+  been extracting since their first release.  v0.1.12 wires the
+  same extractor into all four checking parsers, so card-purchase
+  rows ("Card Purchase 02/17 Tst*Merchant Fremont CA"), ATM rows
+  ("ATM Cash Withdrawal 3700 ... San Francisco CA"), and any
+  other description ending in a recognizable city + 2-letter
+  state code now populate the column on new ingests.  Rows that
+  don't have a CITY ST tail (ACH, Zelle, wire transfers) stay
+  empty — those don't carry location info in the source PDF.
+
+- **One-shot backfill migration extracts LOC on existing checking
+  rows.**  On first launch of v0.1.12, the sidecar scans every
+  checking transaction with a NULL `merchant_city`, runs the
+  extractor on the original description, and writes the city +
+  state back if anything was found.  Same audit-log pattern as
+  the v0.1.11 kind backfill — records the candidate count, the
+  number actually corrected, and a few example transitions.
+  Idempotent.  Title-case city names ("Fremont", "Newark", "San
+  Francisco") are now correctly captured alongside the all-caps
+  format ("FREMONT", "NEWARK") credit-card statements use.
+
+### Notes for existing users
+
+- **One safe backfill migration runs on first launch.**  No data
+  loss possible — the migration only WRITES `merchant_city` and
+  `merchant_state` where they were NULL.  Existing values are
+  never overwritten, and rows where no city/state could be
+  extracted stay NULL.  Backups of your pre-v0.1.12 database
+  remain readable by older releases.
+- **The Transactions view's LOC column will start showing values
+  for checking transactions after upgrade.**  Specifically:
+  card-purchase rows and ATM rows that have a trailing CITY ST
+  in their descriptions.  ACH (e.g. Chase Credit Crd autopay),
+  Zelle, and wire-transfer rows continue to show "—" because
+  there's no location data to extract.
+
+---
+
 ## v0.1.11 — _unreleased_
 
 ### Fixed
