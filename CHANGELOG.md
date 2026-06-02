@@ -44,31 +44,10 @@ version must start with `## <version>` on its own line.
   rows.**  On first launch of v0.1.12, the sidecar scans every
   checking transaction with a NULL `merchant_city`, runs the
   extractor on the original description, and writes the city +
-  state back if anything was found.  Same audit-log pattern as
-  the v0.1.11 kind backfill — records the candidate count, the
-  number actually corrected, and a few example transitions.
-  Idempotent.  Title-case city names ("Fremont", "Newark", "San
-  Francisco") are now correctly captured alongside the all-caps
-  format ("FREMONT", "NEWARK") credit-card statements use.
-
-### Notes for existing users
-
-- **One safe backfill migration runs on first launch.**  No data
-  loss possible — the migration only WRITES `merchant_city` and
-  `merchant_state` where they were NULL.  Existing values are
-  never overwritten, and rows where no city/state could be
-  extracted stay NULL.  Backups of your pre-v0.1.12 database
-  remain readable by older releases.
-- **The Transactions view's LOC column will start showing values
-  for checking transactions after upgrade.**  Specifically:
-  card-purchase rows and ATM rows that have a trailing CITY ST
-  in their descriptions.  ACH (e.g. Chase Credit Crd autopay),
-  Zelle, and wire-transfer rows continue to show "—" because
-  there's no location data to extract.
-
----
-
-## v0.1.11 — _unreleased_
+  state back if anything was found.  Idempotent.  Title-case city
+  names ("Fremont", "Newark", "San Francisco") are now correctly
+  captured alongside the all-caps format ("FREMONT", "NEWARK")
+  credit-card statements use.
 
 ### Fixed
 
@@ -90,18 +69,15 @@ version must start with `## <version>` on its own line.
   'credit' ? 'deposit' : 'purchase'` — bug eliminated for new
   imports.
 - **One-shot backfill migration corrects existing wrong kinds.**
-  When you launch v0.1.11, the sidecar runs a one-time pass that
-  re-classifies every transaction whose `(direction, kind)` pair
-  is the impossible state the bug produced (e.g., `debit +
-  deposit`, `debit + direct_dep`).  Re-classification uses the
-  corrected classifier on the original description, so backfilled
-  rows are indistinguishable from freshly-ingested ones.  Tax
-  Summary's Outgoing breakdown now reads what it should — credit
-  card payments, ATM withdrawals, purchases, transfers, fees —
-  not a single sweeping "deposit" bucket.  The audit log records
-  how many rows were corrected and the before-after kind
-  transitions so the operation is traceable.  Idempotent — re-
-  runs find zero candidates.
+  Same first-launch pass re-classifies every transaction whose
+  `(direction, kind)` pair is the impossible state the bug
+  produced (e.g., `debit + deposit`, `debit + direct_dep`).
+  Re-classification uses the corrected classifier on the original
+  description, so backfilled rows are indistinguishable from
+  freshly-ingested ones.  Tax Summary's Outgoing breakdown now
+  reads what it should — credit card payments, ATM withdrawals,
+  purchases, transfers, fees — not a single sweeping "deposit"
+  bucket.  Idempotent.
 - **Tax Summary's breakdown now shows "Deposits" and "Direct
   deposits" instead of the raw lowercase `deposit` /
   `direct_dep` strings.** Polish — the friendly-label map in
@@ -110,19 +86,27 @@ version must start with `## <version>` on its own line.
 
 ### Notes for existing users
 
-- **One safe backfill migration.** Runs once on first launch
-  after upgrade.  Audit log captures the count of corrections;
-  no data loss possible — the migration only writes
-  `transaction_kind`, never touches amounts / dates /
-  descriptions / FKs.  Backups (Time Machine etc.) of your
-  pre-v0.1.11 database remain readable by older releases.
+- **Two safe backfill migrations run on first launch.**  No data
+  loss possible — they only write `transaction_kind` (kind
+  backfill) and `merchant_city` / `merchant_state` (LOC
+  backfill), and only on rows where the values are impossible-
+  state or NULL respectively.  Existing values are never
+  overwritten.  Audit log captures the counts for traceability.
+  Backups (Time Machine etc.) of your pre-v0.1.12 database
+  remain readable by older releases.
 - **Tax Summary will look different on existing imports.**
   Specifically, the Outgoing breakdown will redistribute what
   was previously a giant "deposit" bucket into the real
   categories.  If you handed a v0.1.10 Tax Summary PDF to your
-  CPA already, regenerate it on v0.1.11 — the totals (Income,
+  CPA already, regenerate it on v0.1.12 — the totals (Income,
   Outgoing, Net) are unchanged, but the kind breakdown
   shifts.
+- **The Transactions view's LOC column will start showing values
+  for checking transactions after upgrade.**  Specifically:
+  card-purchase rows and ATM rows that have a trailing CITY ST
+  in their descriptions.  ACH (e.g. Chase Credit Crd autopay),
+  Zelle, and wire-transfer rows continue to show "—" because
+  there's no location data to extract.
 
 ---
 
