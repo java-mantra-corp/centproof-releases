@@ -22,6 +22,52 @@ version must start with `## <version>` on its own line.
 
 ---
 
+## v0.1.14 — _unreleased_
+
+### Fixed
+
+- **The real root cause behind every "Generating AI suggestions is
+  stuck" report since v0.1.7.**  Through v0.1.7-v0.1.12 the
+  "Generating AI suggestions… N of M analyzed" screen was hanging
+  on more imports than not.  v0.1.9 fixed one error path that left
+  rows pending after a timeout; v0.1.10 fixed two more after small
+  LLM models returned invalid JSON.  Those were real bugs but
+  weren't the main culprit.  The actual root cause was a
+  divergence between two SQL queries that should describe the
+  same set of rows:
+    - `listSuggestableRowsForStatement` (which decides what the
+      AI suggester actually processes) filters on `ai_suggested_at
+      IS NULL AND (entity_id IS NULL OR category_id IS NULL)`.
+    - `getStatementSuggestionProgress` and
+      `getGlobalSuggestionProgress` (which drive the "N of M
+      analyzed" UI + the "AI: 3/N done" sidebar chip) added a
+      third `OR notes IS NULL` clause to the same filter.
+  v0.1.7 had correctly removed `notes IS NULL` from the suggester's
+  filter (notes are almost always NULL — the OR was a no-op that
+  made AI run on every row).  But it never updated the matching
+  progress query.  Result: rows tagged by correction rules
+  (entity + category set, notes still NULL) showed up as PENDING in
+  the progress chip, but the suggester correctly excluded them and
+  finished its batch in zero seconds with zero work done.  The UI
+  polled forever showing "0 of 1 analyzed" — and the sidebar AI
+  chip showed inflated counts like "3/11 done" indefinitely, when
+  in reality only 3 transactions had any AI work pending.
+  v0.1.10's 90-second stall detector surfaced the per-statement
+  symptom as a warning panel; v0.1.14 removes the underlying
+  cause.  A new invariant smoke test now asserts the two queries
+  always describe the same set, so any future drift fails CI
+  loudly.
+
+### Notes for existing users
+
+- **Upgrade in place.**  No database changes, no settings to
+  migrate.  The "AI: N/M done" sidebar chip should accurately
+  reflect work-actually-pending immediately after upgrade — no
+  re-import needed.  Open Preferences → About → Check for
+  updates, or download the new .dmg from centproof.com/download.
+
+---
+
 ## v0.1.12 — 2026-06-01
 
 ### Added
@@ -50,35 +96,6 @@ version must start with `## <version>` on its own line.
   credit-card statements use.
 
 ### Fixed
-
-- **The real root cause behind every "Generating AI suggestions is
-  stuck" report since v0.1.7.**  Through v0.1.7-v0.1.11 the
-  "Generating AI suggestions… N of M analyzed" screen was hanging
-  on more imports than not.  v0.1.9 fixed one error path that left
-  rows pending after a timeout; v0.1.10 fixed two more after small
-  LLM models returned invalid JSON.  Those were real bugs but
-  weren't the main culprit.  The actual root cause was a
-  divergence between two SQL queries that should describe the
-  same set of rows:
-    - `listSuggestableRowsForStatement` (which decides what the
-      AI suggester actually processes) filters on `ai_suggested_at
-      IS NULL AND (entity_id IS NULL OR category_id IS NULL)`.
-    - `getStatementSuggestionProgress` and
-      `getGlobalSuggestionProgress` (which drive the "N of M
-      analyzed" UI) added a third `OR notes IS NULL` clause to
-      the same filter.
-  v0.1.7 had correctly removed `notes IS NULL` from the suggester's
-  filter (notes are almost always NULL — the OR was a no-op that
-  made AI run on every row).  But it never updated the matching
-  progress query.  Result: rows tagged by correction rules
-  (entity + category set, notes still NULL) showed up as PENDING in
-  the progress chip, but the suggester correctly excluded them and
-  finished its batch in zero seconds with zero work done.  The UI
-  polled forever showing "0 of 1 analyzed."  v0.1.10's 90-second
-  stall detector surfaced the symptom as a warning panel — v0.1.12
-  removes the underlying cause.  A new invariant smoke test now
-  asserts that the two queries always describe the same set, so
-  any future drift fails CI loudly.
 
 - **Chase business-statement transactions were being tagged
   `kind = deposit` even when they were outgoing payments.** Surfaced
