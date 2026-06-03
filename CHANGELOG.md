@@ -22,6 +22,37 @@ version must start with `## <version>` on its own line.
 
 ---
 
+## v0.1.15 — _unreleased_
+
+### Fixed
+
+- **Bank of America statements with multi-page sections were
+  silently dropping transactions.**  When a section had enough
+  rows that it spilled onto a second page, the continuation page's
+  header read "Other subtractions — continued" instead of the
+  usual "Other subtractions".  Pre-fix, the parser only matched
+  the exact header, so every row printed under the continuation
+  header was silently skipped — manifesting as a reconciliation
+  off-by exactly equal to the dropped rows' total.  Across one
+  user's 21-statement archive, 20 statements parsed cleanly but
+  one (`eStmt_2023-08-17.pdf`) was off by $163.93 — the sum of
+  3 rows on its page 4 continuation.  v0.1.15 accepts both header
+  variants for all five BoA sections (Deposits, ATM, Other
+  subtractions, Checks, Service fees), so any future statement
+  whose section spans pages parses fully.  A new unit test pins
+  the regex so this can't regress.
+
+### Notes for existing users
+
+- **Upgrade in place.**  No database changes, no settings to
+  migrate.  Re-import any BoA statement that previously
+  reconciled off — the parser will now extract the full set of
+  rows.  (You can spot affected statements quickly: open
+  Inbox → any committed BoA statement → look for a non-zero
+  "Off by" badge.)
+
+---
+
 ## v0.1.14 — 2026-06-02
 
 ### Fixed
