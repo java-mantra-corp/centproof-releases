@@ -42,6 +42,27 @@ version must start with `## <version>` on its own line.
   whose section spans pages parses fully.  A new unit test pins
   the regex so this can't regress.
 
+- **Transactions: account filter no longer resets to "All
+  accounts" after saving an entity or category.**  Reproduction
+  the user reported: filter to one account by clicking its card
+  (e.g. BofA ··5981 → 164 rows), open the Entity dialog on a
+  row, click "Save rule & tag N rows" or "Apply to this row
+  only" — the filter would silently drop back to All accounts,
+  the strip would expand from two cards to four, and the row
+  count would jump back to the all-accounts total.  Root cause
+  was a stale-closure race in how the totals strip's card-click
+  scheduled the refetch (a `setTimeout(run, 0)` that captured
+  the *previous* render's view of the filter when the user
+  opened the dialog mid-flight).  v0.1.15 drops the setTimeout
+  pattern entirely; the refetch is now driven by a React effect
+  that always closes over the latest selection.  Belt-and-
+  suspenders: the selection is also persisted to sessionStorage
+  so it survives tab navigation within the same app session.
+  All explicit-clear paths still work — "Reset filters" button,
+  Account dropdown's "All" option, clicking the active card to
+  toggle off, or clicking the "All accounts" card.  Resets on
+  app restart by design.
+
 ### Notes for existing users
 
 - **Upgrade in place.**  No database changes, no settings to
