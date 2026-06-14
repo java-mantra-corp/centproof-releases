@@ -22,6 +22,35 @@ version must start with `## <version>` on its own line.
 
 ---
 
+## v0.2.0 — _unreleased_
+
+### Added
+
+- **CentProof Business — keep books for multiple clients in one app.**
+  A new Business edition gives every client its own fully isolated
+  workspace: switch clients from the sidebar and you see only that
+  client's accounts, statements, transactions, tags, and reports —
+  never a mix. Unlock it with a Business license. The personal edition
+  is unchanged.
+- **Batch import a whole folder of statements at once.** Drop in many
+  PDFs together. Statements that reconcile to the cent are imported and
+  filed automatically; anything that doesn't is queued for a quick
+  review — so a month-end stack of statements takes minutes, not hours.
+  Available on Pro and Business.
+- **Export to QuickBooks.** Alongside CSV and PDF, you can now export
+  reconciled transactions to OFX and QuickBooks-compatible QBO/QFX (Web
+  Connect) files, ready to import into your accounting tool. Available
+  on Pro and Business.
+
+### Fixed
+
+- **Chase personal "Total Checking" statements from 2023 onward
+  imported zero transactions.** Chase added new section markers to
+  personal statements in 2023 that made CentProof read them as the
+  business statement format, so no rows were extracted. These
+  statements now import and reconcile correctly — re-import any
+  affected statement to pick up its transactions.
+
 ## v0.1.15 — 2026-06-03
 
 ### Fixed
