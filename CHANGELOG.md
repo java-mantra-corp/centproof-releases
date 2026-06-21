@@ -22,6 +22,22 @@ version must start with `## <version>` on its own line.
 
 ---
 
+## v0.2.1 — _unreleased_
+
+### Added
+
+- **Ask CentProof is smarter (opt-in beta).** Turn these on in
+  Preferences → AI → "AI Search (beta)":
+  - **Smart merchant & category matching** — phrasing like "warehouse club"
+    finds the real merchant ("Costco"), matched on your Mac.
+  - **Conversational follow-ups** — ask "just the Apple Card" to refine your
+    last question instead of starting over.
+  - **Multi-step questions** — comparisons like "Costco vs Whole Foods this
+    year" run each part and combine the results.
+- **See the transactions behind any answer.** "View transactions" now opens
+  an in-app list of the exact transactions an answer is based on — each linked
+  to its original PDF page — without leaving Ask CentProof.
+
 ## v0.2.0 — 2026-06-13
 
 ### Added
