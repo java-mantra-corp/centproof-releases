@@ -22,7 +22,7 @@ version must start with `## <version>` on its own line.
 
 ---
 
-## v0.2.2 — _unreleased_
+## v0.2.2 — 2026-06-24
 
 ### Fixed
 
