@@ -22,6 +22,21 @@ version must start with `## <version>` on its own line.
 
 ---
 
+## v0.2.2 — _unreleased_
+
+### Fixed
+
+- **Credit-card payments and payroll are categorized correctly on Chase
+  checking accounts.** Payments to other credit cards (e.g. "Citi Card Online
+  Payment") no longer count as merchant spending, and payroll deposits (e.g.
+  Gusto) are recognized as income — so spending totals and income questions
+  are accurate. Already-imported transactions are corrected automatically on
+  first launch.
+- **The local AI server no longer lingers after you quit.** CentProof now
+  reliably shuts down its bundled AI server when you close the app, and cleans
+  up any stray one left by a prior crash or force-quit on the next launch — so
+  it can't keep holding memory in the background.
+
 ## v0.2.1 — 2026-06-21
 
 ### Added
